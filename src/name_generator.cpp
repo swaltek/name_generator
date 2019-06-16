@@ -51,13 +51,19 @@ void MarkovModel::observe(std::string sequence, float count)
 	{
 		std::string context{ sequence.substr(i - order,order) };
 		char event = sequence.at(i);
-		categorical(context).observe( event, count);
+		//adds not only 012 but 12 and 2 where 0,1,2, is indexes of sequence
+		//allows model to not be stuck when generating a sequence of 3 that was not observed
+		for(unsigned i{ 0 }; i < order; ++i)
+		{
+			std::string observed_context =  context.substr(i, order - i);
+			categorical(observed_context).observe( event, count);
+		}
 	}
 }
 
 MarkovCategorical& MarkovModel::categorical(std::string context)
 {
-	if( context.size() != order)throw std::logic_error("MarkovModel::categorical(context) context.size() != order");
+	if( context.size() > order)throw std::logic_error("MarkovModel::categorical(context) context.size() != order");
 
 	auto iter = data.find(context);
 	if(iter == data.end())
