@@ -5,18 +5,14 @@
 int main()
 {
 	std::set<char> support = { 'a', 'b', 'c', 'd', 'e' };
-	MarkovCategorical mcat{ support, 0.001 };
+	std::map<char, int> count;
+	MarkovCategorical mcat{ support, 1 };
 
-	std::vector<int> count( 5 );
 	for(int s = 0; s < 1000; ++s)
 	{
-		++count.at( mcat.sample() );
+		++count[ mcat.sample() ];
 	}
 
-	std::cout << mcat;
-	std::cout << '\n';
-
-	int index{ 0 };
-	for(float f : count) std::cout << ' ' << index << '=' << f;
+	for(auto i  : count) std::cout << ' ' << i.first << '=' << i.second;
 	std::cout << '\n';
 }

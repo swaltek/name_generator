@@ -11,7 +11,7 @@ void MarkovCategorical::observe(char c, float count)
 	total += count;
 }
 
-size_t MarkovCategorical::sample()
+char MarkovCategorical::sample() const
 {
 	static std::default_random_engine rand_eng(time(NULL));
 	static std::uniform_real_distribution<float> uniform_dist{0, total};
@@ -21,10 +21,10 @@ size_t MarkovCategorical::sample()
 	}
 
 	float rand{ uniform_dist( rand_eng ) };
-	for(decltype(data.size()) i = 0; i < data.size(); ++i)
+	for(auto begin{ data.begin()}; begin != data.end(); ++begin)
 	{
-		if(data.at(i) >= rand) return i;
-		rand -= data.at(i);
+		if(begin->second >= rand) return begin->first;
+		rand -= begin->second;
 	}
 
 	throw std::logic_error("MarkovCategorical::sample()");
@@ -43,9 +43,23 @@ void MarkovCategorical::print(std::ostream& ostrm) const
 	}
 }
 
+std::string MarkovModel::generate() const
+{
+	std::string sequence = prefix;
+	do
+	{
+		sequence.push_back(sample(sequence));
+	}
+	while(sequence.back() != boundary_char);
+
+	//remove prefix and postfix
+	sequence.erase(sequence.begin(), sequence.begin() + order);
+	sequence.erase(sequence.end() - 1, sequence.end());
+	return sequence;
+}
+
 void MarkovModel::observe(std::string sequence, float count)
 {
-	std::transform(sequence.begin(), sequence.end(), sequence.begin(), ::tolower);
 	sequence = prefix + sequence + postfix;
 	for(decltype(sequence.size()) i{ order }; i < sequence.size(); ++i)
 	{
@@ -55,10 +69,32 @@ void MarkovModel::observe(std::string sequence, float count)
 		//allows model to not be stuck when generating a sequence of 3 that was not observed
 		for(unsigned i{ 0 }; i < order; ++i)
 		{
-			std::string observed_context =  context.substr(i, order - i);
+			std::string observed_context =  context.substr(i);
 			categorical(observed_context).observe( event, count);
 		}
 	}
+}
+
+const MarkovCategorical& MarkovModel::find_categorical(std::string context) const
+{
+	if(context.size() > order)
+	{
+		//trim start
+		context = context.substr(context.size() - order);
+	}
+	else if(context.size() < order)
+	{
+		//add to start
+		context = std::string(order - context.size(), boundary_char) + context;
+	}
+	
+	auto iter = data.find(context);
+	while(iter == data.end())
+	{
+		context = context.substr(1);
+		iter = data.find(context);
+	}
+	return iter->second;
 }
 
 MarkovCategorical& MarkovModel::categorical(std::string context)
@@ -82,6 +118,11 @@ void MarkovModel::print(std::ostream& ostrm) const
 		ostrm << begin->first << "| " << begin->second << '\n';
 		++begin;
 	}
+}
+
+char MarkovModel::sample(std::string context) const
+{
+	return find_categorical(context).sample();
 }
 
 std::ostream& operator<<(std::ostream& ostrm, const MarkovCategorical& mc)

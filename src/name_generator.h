@@ -18,7 +18,7 @@ public:
 	}
 
 	void observe(char c, float count = 1.0f);
-	size_t sample();
+	char sample() const;
 
 	void print(std::ostream& ostrm) const;
 private:
@@ -35,10 +35,12 @@ public:
 		support.insert(boundary_char);
 	}
 
+	std::string generate() const;
 	void observe(std::string sequence, float count = 1);
-
 	void print(std::ostream& ostrm) const;
+	char sample(std::string context) const;
 private:
+	const MarkovCategorical& find_categorical(std::string context) const;
 	MarkovCategorical& categorical(std::string context);
 
 	const unsigned order; //how many prevouse characters will influence selction of next character
