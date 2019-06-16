@@ -1,4 +1,5 @@
 #include "name_generator.h"
+#include <algorithm>
 #include <ctime>
 #include <iostream>
 #include <random>
@@ -44,6 +45,7 @@ void MarkovCategorical::print(std::ostream& ostrm) const
 
 void MarkovModel::observe(std::string sequence, float count)
 {
+	std::transform(sequence.begin(), sequence.end(), sequence.begin(), ::tolower);
 	sequence = prefix + sequence + postfix;
 	for(decltype(sequence.size()) i{ order }; i < sequence.size(); ++i)
 	{
