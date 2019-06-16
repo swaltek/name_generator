@@ -34,7 +34,11 @@ void MarkovCategorical::print(std::ostream& ostrm) const
 	auto begin = data.begin();
 	while( begin != data.end())
 	{
-		ostrm << ' ' << begin->first  << '=' << begin++->second;
+		if(begin->second > (total/data.size())) //only print values that have a substantial value
+		{
+			ostrm << ' ' << begin->first  << '=' << begin->second;
+		}
+		++begin;
 	}
 }
 

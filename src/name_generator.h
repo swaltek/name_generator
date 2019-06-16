@@ -3,6 +3,8 @@
 #include <set>
 #include <vector>
 
+#include <iostream>
+
 class MarkovCategorical
 {
 public:
@@ -27,8 +29,8 @@ private:
 class MarkovModel
 {
 public:
-	MarkovModel(const std::set<char>& support_data,unsigned model_order,float prior, char boundary_char = ' ')
-		: support(support_data), order(model_order), prior(prior), boundary_char(boundary_char), prefix(boundary_char, model_order), postfix(boundary_char)
+	MarkovModel(const std::set<char>& support_data,unsigned model_order,float data_prior, char word_boundary_char = '_')
+		: support(support_data), order(model_order), prior(data_prior), boundary_char(word_boundary_char), prefix(model_order, word_boundary_char), postfix(word_boundary_char)
 	{
 		support.insert(boundary_char);
 	}
