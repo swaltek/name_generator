@@ -6,22 +6,28 @@
 class MarkovCategorical
 {
 public:
-	MarkovCategorical(size_t support_data_size, float prior)
-		: total(support_data_size * prior), data(support_data_size, prior) {}
+	MarkovCategorical(std::set<char> support, float prior)
+		: total(support.size() * prior)
+	{
+		for(char c : support)
+		{
+			data[c] = prior;
+		}
+	}
 
-	void observe(size_t data_index, float count = 1.0f);
+	void observe(char c, float count = 1.0f);
 	size_t sample();
 
 	void print(std::ostream& ostrm) const;
 private:
 	float total;
-	std::vector<float> data;
+	std::map<char, float> data;
 };
 
 class MarkovModel
 {
 public:
-	MarkovModel(const std::set<char>& support_data,unsigned model_order,float prior, char boundary_char = '\0')
+	MarkovModel(const std::set<char>& support_data,unsigned model_order,float prior, char boundary_char = ' ')
 		: support(support_data), order(model_order), prior(prior), boundary_char(boundary_char), prefix(boundary_char, model_order), postfix(boundary_char)
 	{
 		support.insert(boundary_char);

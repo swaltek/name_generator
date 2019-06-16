@@ -4,9 +4,9 @@
 #include <random>
 #include <vector>
 
-void MarkovCategorical::observe(size_t data_index, float count)
+void MarkovCategorical::observe(char c, float count)
 {
-	data.at(data_index) += count;
+	data[c] += count;
 	total += count;
 }
 
@@ -32,10 +32,9 @@ size_t MarkovCategorical::sample()
 void MarkovCategorical::print(std::ostream& ostrm) const
 {
 	auto begin = data.begin();
-	unsigned i{ 0 };
 	while( begin != data.end())
 	{
-		ostrm << ' ' << i++ << '=' << *begin++;
+		ostrm << ' ' << begin->first  << '=' << begin++->second;
 	}
 }
 
@@ -46,7 +45,7 @@ void MarkovModel::observe(std::string sequence, float count)
 	{
 		std::string context{ sequence.substr(i - order,order) };
 		char event = sequence.at(i);
-		categorical(context).observe(event, count);
+		categorical(context).observe( event, count);
 	}
 }
 
@@ -57,7 +56,7 @@ MarkovCategorical& MarkovModel::categorical(std::string context)
 	auto iter = data.find(context);
 	if(iter == data.end())
 	{
-		MarkovCategorical cat{ support.size(), prior};
+		MarkovCategorical cat{ support, prior};
 		iter = data.insert( {context, cat} ).first;
 	}
 	return iter->second;
@@ -68,9 +67,8 @@ void MarkovModel::print(std::ostream& ostrm) const
 	auto begin = data.begin();
 	while( begin != data.end())
 	{
-		ostrm << begin->first << "| ";
-		begin->second.print(ostrm);
-		ostrm << '\n';
+		ostrm << begin->first << "| " << begin->second << '\n';
+		++begin;
 	}
 }
 

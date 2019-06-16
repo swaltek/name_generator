@@ -4,7 +4,8 @@
 
 int main()
 {
-	MarkovCategorical mcat{ 5, 0.001 };
+	std::set<char> support = { 'a', 'b', 'c', 'd', 'e' };
+	MarkovCategorical mcat{ support, 0.001 };
 
 	std::vector<int> count( 5 );
 	for(int s = 0; s < 1000; ++s)
